@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="bs-docs-section">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+                <h3 id="forms"></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="well bs-component">
+                <form class="form-horizontal" action="" method="POST" id="run_form">
+                    <fieldset>
+                    <legend>Crawler IG</legend>
+                         {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        <label for="hotel" class="col-lg-3 control-label">Hotel</label>
+                        <div class="col-lg-6">
+                            {{form.hotel(class="form-control empty")}}<span class="material-input"></span>
+                            <!--input type="text" class="form-control empty" id="dmp_id"><span class="material-input"></span-->
+                        </div>
+                        <div class="col-lg-2">
+                            <dl>
+                        {% for message in form.hotel.errors %}
+                            <dt><p class="flash text-danger">{{ message }}</p></dt>
+                        {% endfor %}
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="recent_media_limit" class="col-lg-3 control-label">Recent media limit</label>
+                        <div class="col-lg-2">
+                            {{form.recent_media_limit(class="form-control empty")}}<span class="material-input"></span>
+                            <!--input type="text" class="form-control empty" id="seg_rep_id"><span class="material-input"></span-->
+                        </div>
+                        <div class="col-lg-6">
+                            <dl class="unstyled">
+                        {% for message in form.recent_media_limit.errors %}
+                                <dt><p class="flash text-danger">{{ message }}</p></dt>
+                        {% endfor %}
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="recent_media_drange" class="col-lg-3 control-label">Recent media date range</label>
+                        <div class="col-lg-2">
+                            {{form.recent_media_drange(class="form-control empty")}}<span class="material-input"></span>
+                            <!--input type="text" class="form-control empty" id="seg_rep_id"><span class="material-input"></span-->
+                        </div>
+                        <div class="col-lg-6">
+                            <dl class="unstyled">
+                        {% for message in form.recent_media_drange.errors %}
+                                <dt><p class="flash text-danger">{{ message }}</p></dt>
+                        {% endfor %}
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="user_media_limit" class="col-lg-3 control-label">User media limit</label>
+                        <div class="col-lg-2">
+                            {{form.user_media_limit(class="form-control empty")}}<span class="material-input"></span>
+                            <!--input type="text" class="form-control empty" id="seg_rep_id"><span class="material-input"></span-->
+                        </div>
+                        <div class="col-lg-6">
+                            <dl class="unstyled">
+                        {% for message in form.user_media_limit.errors %}
+                                <dt><p class="flash text-danger">{{ message }}</p></dt>
+                        {% endfor %}
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-4 col-lg-offset-8">
+                            <!--button class="btn btn-default">Cancel</button-->
+                            <button type="submit" class="btn btn-info" id="run_button">Run</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4 cookie" id="cookie">
+            {% for item in files %}
+              <div class="alert alert-dismissable alert-info">
+                <!-- a id="{{ item }}" onclick="del(this)" type="button" class="close" data-dismiss="alert">×</a-->
+                <strong><a href="/dwnld/{{ item }}"></strong>{{ item }}</div>
+            {% endfor %}
+            {% for item in runs %}
+              <div class="jobbar alert alert-dismissable alert-warning" data-jobid="{{ item['id'] }}">
+                <!-- a id="{{ item }}" onclick="del(this)" type="button" class="close" data-dismiss="alert">×</a-->
+                <strong>{{ item['args'].split("'")[1] }}</strong>
+                <p id="{{ item['id'] }}"></p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}
+{% block footer %}
+<script>
+function del(key){
+    //sessionStorage.removeItem(key.id);
+}
+
+function decodeJSON(encodedJSON) {
+  var decodedJSON = $('<div/>').html(encodedJSON).text();
+  return $.parseJSON(decodedJSON);
+ }
+
+
+$.each($(".jobbar"),function(){var jobid = $(this).attr("data-jobid");
+  function status(){
+      $.getJSON("/status/" + jobid, function(data) {
+            //data = data.toString();
+
+            switch(data["state"]) {
+                case 'SUCCESS':
+                    location.reload();
+                break;
+                case 'PENDING':
+                    setTimeout(status(), 500) 
+                    $("#" + jobid).text('PENDING...');
+                    //do something
+                    //clear interval_id - window.clearInterval(interval_id)
+                break;
+                case 'PROGRESS':
+                    setTimeout(status(), 500) 
+                    $("#" + jobid).text('progress: '+ data['current'] + '%; status: ' + data["status"]);
+                    //do something
+                    //clear interval_id - window.clearInterval(interval_id)
+                break;
+            }
+        })
+      
+    }
+   status();
+  })  
+
+
+</script>
+
+
+{% endblock %}
