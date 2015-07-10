@@ -1,0 +1,6 @@
+flask
+celery
+tablib
+requests
+flask-wtf
+redis
